@@ -22,33 +22,21 @@
     <div class="form-grid" id="form">
       <!-- 8 pessoas: Nome e seleção de MBTI -->
       <input type="text" placeholder="Nome" id="nome0" />
-      <select id="mbti0"> <option value="">Tipo MBTI</option>
-        <option>ISFJ</option><option>ESFJ</option><option>ISTJ</option><option>ESTJ</option>
-        <option>ISFP</option><option>ESFP</option><option>ISTP</option><option>ESTP</option>
-        <option>INFJ</option><option>ENFJ</option><option>INTJ</option><option>ENTJ</option>
-        <option>INFP</option><option>ENFP</option><option>INTP</option><option>ENTP</option>
-      </select>
+      <select id="mbti0"><option value="">Tipo MBTI</option></select>
       <input type="text" placeholder="Nome" id="nome1" />
-      <select id="mbti1"> <option value="">Tipo MBTI</option>
-        <option>ISFJ</option><option>ESFJ</option><option>ISTJ</option><option>ESTJ</option>
-        <option>ISFP</option><option>ESFP</option><option>ISTP</option><option>ESTP</option>
-        <option>INFJ</option><option>ENFJ</option><option>INTJ</option><option>ENTJ</option>
-        <option>INFP</option><option>ENFP</option><option>INTP</option><option>ENTP</option>
-      </select>
+      <select id="mbti1"><option value="">Tipo MBTI</option></select>
       <input type="text" placeholder="Nome" id="nome2" />
-      <select id="mbti2"> <option value="">Tipo MBTI</option>
-        <!-- same options -->
-      </select>
+      <select id="mbti2"><option value="">Tipo MBTI</option></select>
       <input type="text" placeholder="Nome" id="nome3" />
-      <select id="mbti3"><option value="">Tipo MBTI</option><!-- options --></select>
+      <select id="mbti3"><option value="">Tipo MBTI</option></select>
       <input type="text" placeholder="Nome" id="nome4" />
-      <select id="mbti4"><option value="">Tipo MBTI</option><!-- options --></select>
+      <select id="mbti4"><option value="">Tipo MBTI</option></select>
       <input type="text" placeholder="Nome" id="nome5" />
-      <select id="mbti5"><option value="">Tipo MBTI</option><!-- options --></select>
+      <select id="mbti5"><option value="">Tipo MBTI</option></select>
       <input type="text" placeholder="Nome" id="nome6" />
-      <select id="mbti6"><option value="">Tipo MBTI</option><!-- options --></select>
+      <select id="mbti6"><option value="">Tipo MBTI</option></select>
       <input type="text" placeholder="Nome" id="nome7" />
-      <select id="mbti7"><option value="">Tipo MBTI</option><!-- options --></select>
+      <select id="mbti7"><option value="">Tipo MBTI</option></select>
     </div>
     <button onclick="irParaPagina2()">Ver Compatibilidade</button>
   </div>
@@ -60,12 +48,13 @@
   </div>
 
   <script>
-    // Preencher seletors repetidos
-    const mbtiOptions = ['ISFJ','ESFJ','ISTJ','ESTJ','ISFP','ESFP','ISTP','ESTP','INFJ','ENFJ','INTJ','ENTJ','INFP','ENFP','INTP','ENTP'];
-    for(let i=2;i<8;i++){
-      const sel = document.getElementById(`mbti${i}`);
-      mbtiOptions.forEach(t=>sel.append(new Option(t,t)));
-    }
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const mbtiOptions = ['ISFJ','ESFJ','ISTJ','ESTJ','ISFP','ESFP','ISTP','ESTP','INFJ','ENFJ','INTJ','ENTJ','INFP','ENFP','INTP','ENTP'];
+      for(let i=0;i<8;i++){
+        const sel = document.getElementById(`mbti${i}`);
+        mbtiOptions.forEach(t=>sel.append(new Option(t,t)));
+      }
+    });
 
     const compat = {
       'ISFJ':['ESFP','ESTP','ISFP','ISTP'],'ESFP':['ISFJ','ISTJ','ESTJ','ISFP'],
@@ -75,9 +64,9 @@
     function grau(m1,m2){ if(m1===m2)return null; if(compat[m1]?.includes(m2)||compat[m2]?.includes(m1))return 'alta'; return 'baixa'; }
 
     function irParaPagina2(){
+      gerarGrafo();
       document.getElementById('pagina1').classList.remove('active');
       document.getElementById('pagina2').classList.add('active');
-      gerarGrafo();
     }
     function voltarParaPagina1(){
       document.getElementById('pagina2').classList.remove('active');
@@ -92,25 +81,33 @@
         if(nome && mbti) pessoas.push({nome,mbti});
       }
       const nodes = pessoas.map((p,i)=>({id:i,label:`${p.nome}\n(${p.mbti})`}));
-      const edges = [];
+      const edgesData = [];
       pessoas.forEach((p,i)=>pessoas.slice(i+1).forEach((q,j)=>{
-        const t=grau(p.mbti,q.mbti);
-        if(t){ edges.push({from:i,to:i+1+j, color:{color:t==='alta'?'green':'red'}, label:t, width:5}); }
+        const t = grau(p.mbti,q.mbti);
+        if(t){
+          const cor = t==='alta'?'green':'red';
+          edgesData.push({id:`${i}-${i+1+j}`, from:i, to:i+1+j, color:{color:cor}, label:t, width:5, origColor:cor, origWidth:5});
+        }
       }));
 
-      const container=document.getElementById('network');
-      const data={nodes:new vis.DataSet(nodes),edges:new vis.DataSet(edges)};
-      const opts={ interaction:{hover:true}, nodes:{shape:'dot',size:30,font:{size:16}}, edges:{arrows:'to',smooth:true}, physics:{barnesHut:{gravitationalConstant:-2000,springLength:300}} };
-      const net=new vis.Network(container,data,opts);
+      const container = document.getElementById('network');
+      const nodesDS = new vis.DataSet(nodes);
+      const edgesDS = new vis.DataSet(edgesData);
+      const network = new vis.Network(container, {nodes:nodesDS, edges:edgesDS}, {
+        interaction:{hover:true},
+        nodes:{shape:'dot',size:30,font:{size:16}},
+        edges:{arrows:'to',smooth:true},
+        physics:{barnesHut:{gravitationalConstant:-2000,springLength:300}}
+      });
 
-      net.on('selectNode',params=>{
-        data.edges.forEach(e=>data.edges.update({id:e.id, color:{color:'#ddd'}, width:3}));
+      network.on('selectNode', params=>{
+        edgesDS.forEach(e=>edgesDS.update({id:e.id, color:{color:'#ddd'}, width:3}));
         params.nodes.forEach(nodeId=>{
-          data.edges.get().filter(e=>e.from===nodeId||e.to===nodeId).forEach(e=>data.edges.update({id:e.id, color:{color:'#7c4dff'}, width:7}));
+          edgesDS.get().filter(e=>e.from===nodeId||e.to===nodeId).forEach(e=>edgesDS.update({id:e.id, color:{color:'blue'}, width:7}));
         });
       });
-      net.on('deselectNode',()=>{
-        data.edges.forEach(e=>data.edges.update({id:e.id, color:{color:e.color.color}, width:e.width}));
+      network.on('deselectNode', ()=>{
+        edgesDS.forEach(e=>edgesDS.update({id:e.id, color:{color:e.origColor}, width:e.origWidth}));
       });
     }
   </script>
