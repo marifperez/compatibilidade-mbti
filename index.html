@@ -268,6 +268,7 @@ tr:hover {
 }
 </style>
 </head>
+
 <body>
 <div class="container">
   <div id="pagina1" class="active">
@@ -366,7 +367,6 @@ tr:hover {
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const mbtiOptions = ['ISFJ','ESFJ','ISTJ','ESTJ','ISFP','ESFP','ISTP','ESTP','INFJ','ENFJ','INTJ','ENTJ','INFP','ENFP','INTP','ENTP'];
-  
   for(let i=0; i<8; i++){
     const sel = document.getElementById(`mbti${i}`);
     mbtiOptions.forEach(t => sel.append(new Option(t, t)));
@@ -399,30 +399,39 @@ function getCompatibilityDesc(type1, type2) {
   const type1Data = compatibilidadeMBTI[type1];
   const type2Data = compatibilidadeMBTI[type2];
   
-  if (type1Data.A.includes(type2)) {
+  if (!type1Data || !type2Data) return "Compatibilidade não definida - tipo MBTI inválido";
+
+  if (type1Data.A.includes(type2) || type2Data.A.includes(type1)) {
     return "Ótima compatibilidade - conexão natural e complementar";
   }
-  if (type1Data.B.includes(type2)) {
+  if (type1Data.B.includes(type2) || type2Data.B.includes(type1)) {
     return "Boa compatibilidade - podem trabalhar bem juntos com esforço";
   }
-  if (type1Data.C.includes(type2)) {
+  if (type1Data.C.includes(type2) || type2Data.C.includes(type1)) {
     return "Compatibilidade média - podem ter desafios mas também pontos em comum";
   }
-  if (type1Data.D.includes(type2)) {
+  if (type1Data.D.includes(type2) || type2Data.D.includes(type1)) {
     return "Baixa compatibilidade - podem ter dificuldades de comunicação e valores";
   }
+  
   return "Compatibilidade não definida - relação pode variar muito";
 }
 
 function grau(m1, m2) {
-  if (m1 === m2) return null;
-  
+  if (!m1 || !m2) return null;
+  if (m1 === m2) return 'Mesmo tipo';
+
   const type1Data = compatibilidadeMBTI[m1];
-  if (type1Data.A.includes(m2)) return 'Ótima';
-  if (type1Data.B.includes(m2)) return 'Boa';
-  if (type1Data.C.includes(m2)) return 'Média';
-  if (type1Data.D.includes(m2)) return 'Baixa';
+  const type2Data = compatibilidadeMBTI[m2];
   
+  if (!type1Data || !type2Data) return null;
+
+  // Verifica em ambas as direções para garantir todas as conexões
+  if (type1Data.A.includes(m2) || type2Data.A.includes(m1)) return 'Ótima';
+  if (type1Data.B.includes(m2) || type2Data.B.includes(m1)) return 'Boa';
+  if (type1Data.C.includes(m2) || type2Data.C.includes(m1)) return 'Média';
+  if (type1Data.D.includes(m2) || type2Data.D.includes(m1)) return 'Baixa';
+
   return null;
 }
 
@@ -442,8 +451,6 @@ function voltarParaPagina1(){
 // Armazenar as cores originais das arestas
 let edgeOriginalColors = {};
 let currentHighlightedNode = null;
-let edgesDataSet = null;
-let networkInstance = null;
 
 function gerarGrafo() {
   const pessoas = [];
@@ -485,22 +492,24 @@ function gerarGrafo() {
   // Configuração das arestas
   const edgesData = [];
   const compatList = [];
-  edgeOriginalColors = {}; // Reinicializa o armazenamento de cores
+  edgeOriginalColors = {};
 
   pessoas.forEach((p, i) => {
     pessoas.slice(i + 1).forEach((q, j) => {
       const t = grau(p.mbti, q.mbti);
       if (t) {
-        const edgeId = `${i}-${i+1+j}`;
+        const edgeId = `${Math.min(i, i+1+j)}-${Math.max(i, i+1+j)}`;
         let cor;
+        
         switch(t) {
           case 'Ótima': cor = '#00c853'; break;
           case 'Boa': cor = '#64dd17'; break;
           case 'Média': cor = '#ff9100'; break;
           case 'Baixa': cor = '#ff1744'; break;
+          case 'Mesmo tipo': cor = '#7c4dff'; break;
           default: cor = '#718096';
         }
-        
+
         const desc = getCompatibilityDesc(p.mbti, q.mbti);
         edgesData.push({
           id: edgeId,
@@ -525,9 +534,7 @@ function gerarGrafo() {
           }
         });
 
-        // Armazenar a cor original
         edgeOriginalColors[edgeId] = cor;
-        
         compatList.push({
           p1: p.nome,
           p1Type: p.mbti,
@@ -542,8 +549,7 @@ function gerarGrafo() {
 
   const container = document.getElementById('network');
   const nodesDS = new vis.DataSet(nodes);
-  edgesDataSet = new vis.DataSet(edgesData);
-  
+  const edgesDS = new vis.DataSet(edgesData);
   const options = {
     interaction: {
       hover: true,
@@ -611,11 +617,11 @@ function gerarGrafo() {
     }
   };
 
-  networkInstance = new vis.Network(container, {nodes: nodesDS, edges: edgesDataSet}, options);
+  const network = new vis.Network(container, {nodes: nodesDS, edges: edgesDS}, options);
   currentHighlightedNode = null;
 
   // Evento para clicar em um nó
-  networkInstance.on('selectNode', params => {
+  network.on('selectNode', params => {
     const nodeId = params.nodes[0];
     if (nodeId !== undefined) {
       currentHighlightedNode = nodeId;
@@ -625,15 +631,15 @@ function gerarGrafo() {
       if (nodeElement) {
         nodeElement.classList.add('node-highlight');
       }
-      
+
       // Destacar as arestas conectadas a este nó
-      const connectedEdges = networkInstance.getConnectedEdges(nodeId);
+      const connectedEdges = network.getConnectedEdges(nodeId);
       
       // Atualizar todas as arestas
       edgesData.forEach(edge => {
         if (connectedEdges.includes(edge.id)) {
           // Restaurar cor original para arestas conectadas
-          edgesDataSet.update({
+          edgesDS.update({
             id: edge.id,
             color: {
               color: edgeOriginalColors[edge.id],
@@ -642,7 +648,7 @@ function gerarGrafo() {
           });
         } else {
           // Colocar as outras arestas em cinza
-          edgesDataSet.update({
+          edgesDS.update({
             id: edge.id,
             color: {
               color: '#cccccc',
@@ -655,11 +661,30 @@ function gerarGrafo() {
   });
 
   // Evento para deselecionar (clicar fora)
-  networkInstance.on('click', params => {
-    if (params.nodes.length === 0) {
+  network.on('deselectNode', () => {
+    // Remove todas as classes de destaque
+    document.querySelectorAll('.node-highlight').forEach(el => el.classList.remove('node-highlight'));
+    
+    // Restaurar todas as arestas para suas cores originais
+    edgesData.forEach(edge => {
+      edgesDS.update({
+        id: edge.id,
+        color: {
+          color: edgeOriginalColors[edge.id],
+          opacity: 0.8
+        }
+      });
+    });
+    
+    currentHighlightedNode = null;
+  });
+
+  // Evento para clicar em outro nó
+  network.on('click', params => {
+    if (params.nodes.length === 0 && currentHighlightedNode !== null) {
       // Clicou fora de qualquer nó - restaurar todas as arestas
       edgesData.forEach(edge => {
-        edgesDataSet.update({
+        edgesDS.update({
           id: edge.id,
           color: {
             color: edgeOriginalColors[edge.id],
@@ -706,6 +731,7 @@ function gerarGrafo() {
         case 'Boa': compatClass = 'medium-compat'; break;
         case 'Média': compatClass = 'average-compat'; break;
         case 'Baixa': compatClass = 'low-compat'; break;
+        case 'Mesmo tipo': compatClass = ''; break;
       }
       
       html += `
