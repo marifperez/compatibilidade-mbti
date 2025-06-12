@@ -379,9 +379,9 @@ const compatibilidadeMBTI = {
   'ESFJ': { A: ['ISTP','ISFP','ENFJ','INFJ'], B: ['ISTJ','ESTJ','ESFP','ESTP','ISFJ'], C: ['INFP','ENFP','INTJ','ENTJ'], D: ['INTP','ENTP'] },
   'ISTJ': { A: ['ESFJ','ENTJ','ENFJ','ISFJ'], B: ['ESTJ','INTJ','INFJ'], C: ['ESTP','ESFP','INTP','ISFP','ISTP'], D: ['ENFP','ENTP','INFP'] },
   'ESTJ': { A: ['ISFJ','ISTJ','ESFJ','ENTJ'], B: ['ESTP','ENFJ','ESFP','ISTP'], C: ['INTJ','INFJ','ENFP','INFP'], D: ['INTP','ENTP','ISFP'] },
-  'ISFP': { A: ['ENFP','ISFJ','ESFJ'], B: ['INFP','ISTJ','INTJ'], C: ['ESTP','ENTP','ESFP','INFJ','ENTJ'], D: ['ESTJ','ENFJ','ISTP'] },
-  'ESFP': { A: ['INFP','ISFJ','ENTJ'], B: ['ESTP','ESFJ','ENFP','ESTJ'], C: ['ISTP','ISTJ','ENTP','INTJ','ISFP'], D: ['INFJ','INTJ','ISTJ','ISTP'] },
-  'ISTP': { A: ['ESFJ','ESTJ','ISFJ'], B: ['ESTP','INTP','INTJ','ENTP'], C: ['INFJ','ENFJ','ESFP','ENFP'], D: ['ISTJ','ISFP','ESFP','ENFJ'] },
+  'ISFP': { A: ['ENFP','ISFJ','ESFJ'], B: ['INFP','ISTJ','INTJ'], C: ['ESTP','ENTP','ESFP','INFJ','ENTJ','ISTP'], D: ['ESTJ','ENFJ'] },
+  'ESFP': { A: ['INFP','ISFJ','ENTJ'], B: ['ESTP','ESFJ','ENFP','ESTJ'], C: ['ISTP','ISTJ','INTJ','ISFP'], D: ['INFJ','INTJ','ISTJ','ISTP', 'ENTP',] },
+  'ISTP': { A: ['ESFJ','ESTJ','ISFJ'], B: ['ESTP','INTP','INTJ','ENTP'], C: ['INFJ','ENFJ','ESFP','ENFP','ISFP'], D: ['ISTJ','ESFP','ENFJ'] },
   'ESTP': { A: ['ISFJ','ISTJ','ESFJ','ENFJ'], B: ['ESFP','ISTP','ENTJ','ENTP'], C: ['INFP','ISFP','ENTJ','INFJ'], D: ['INTJ','INFJ','ISFP','ESFJ'] },
   'INFJ': { A: ['ENFP','INFP','ESFJ','ISFJ'], B: ['ENFJ','INTJ','ISTJ','ISTP'], C: ['ENTP','INTP','ESFP','ISFP'], D: ['ESTP','ESTJ','ENTJ','ESFP'] },
   'ENFJ': { A: ['INFJ','INFP','ESFJ','ESTJ'], B: ['ENFP','INTJ','ISTJ','ISTP'], C: ['ENTP','INTP','ISFJ','ISFP'], D: ['ESTP','ESFP','ENTJ','ESTJ'] },
@@ -390,7 +390,7 @@ const compatibilidadeMBTI = {
   'INFP': { A: ['ENFJ','ENFP','ISFJ','ESFP'], B: ['INFJ','INTP','ISTJ','ISTP'], C: ['ENTP','INTJ','ISFP','INFJ'], D: ['ESTJ','ENTJ','ESTP','ESFJ'] },
   'ENFP': { A: ['INFJ','INFP','ENFJ','ESFP'], B: ['ENTP','ENFJ','ISFP','ISTP'], C: ['INTJ','ENTJ','ISFJ','INTP'], D: ['ISTJ','ISTP','ESTJ','ESTP'] },
   'INTP': { A: ['ENTP','INTJ','ISTP','INFP'], B: ['ENFJ','ENTJ','INFJ','ISTJ'], C: ['ENFP','ENFJ','ISFJ','ISFP'], D: ['ESFP','ESTP','ESFJ','ESTJ'] },
-  'ENTP': { A: ['INTP','INTJ','ENFP','ENFJ'], B: ['ESTP','ENTJ','INFJ'], C: ['ISFP','ISFJ','ISTJ','INFP','ISTP'], D: ['ESFJ','ESTJ','ESFP','ISTJ'] }
+  'ENTP': { A: ['INTP','INTJ','ENFP','ENFJ'], B: ['ESTP','ENTJ','INFJ'], C: ['ISFP','ISTJ','INFP','ISTP'], D: ['ESFJ','ESTJ','ESFP','ISTJ','ISFJ'] }
 };
 
 function getCompatibilityDesc(type1, type2) {
