@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
@@ -22,6 +22,7 @@
       --card-bg: #ffffff;
       --inactive: #e2e8f0;
     }
+    
     
     body {
       font-family: 'Segoe UI', 'Roboto', sans-serif;
@@ -244,14 +245,13 @@
       box-shadow: 0 0 10px rgba(124, 77, 255, 0.5);
     }
     
-    .edge-highlight {
-      width: 5px !important;
+.edge-active {
+      opacity: 1 !important;
     }
     
     .edge-inactive {
       opacity: 0.3 !important;
     }
-    
     .node-label {
       font-size: 14px;
       text-align: center;
@@ -436,7 +436,7 @@
       window.scrollTo(0, 0);
     }
 
-    function gerarGrafo(){
+    ffunction gerarGrafo(){
       const pessoas = [];
       for(let i=0;i<8;i++){
         const nome = document.getElementById(`nome${i}`).value.trim();
@@ -542,7 +542,7 @@
         interaction: {
           hover: true,
           zoomView: false,
-          selectConnectedEdges: true,
+          selectConnectedEdges: false, // Mudado para false para não selecionar automaticamente
           tooltipDelay: 300,
           hideEdgesOnDrag: true
         },
@@ -599,42 +599,66 @@
       
       const network = new vis.Network(container, {nodes: nodesDS, edges: edgesDS}, options);
       
-      // Eventos para destacar nós e arestas
-      network.on('selectNode', params => {
-        const nodeId = params.nodes[0];
-        if (nodeId !== undefined) {
-          // Adiciona classe de destaque ao nó selecionado
-          const nodeElement = document.querySelector(`[data-node-id="${nodeId}"]`);
-          if (nodeElement) {
-            nodeElement.classList.add('node-highlight');
-          }
-          
-          // Destaca arestas conectadas e desativa as não conectadas
-          const allEdges = edgesDS.getIds();
+      // Variável para armazenar o nó selecionado
+      let selectedNode = null;
+      
+      // Função para atualizar a visibilidade das arestas
+      function updateEdgeVisibility(nodeId) {
+        const allEdges = edgesDS.get();
+        
+        if (nodeId !== null) {
           const connectedEdges = network.getConnectedEdges(nodeId);
           
-          allEdges.forEach(edgeId => {
-            const edgeElement = document.querySelector(`[data-edge-id="${edgeId}"]`);
-            if (edgeElement) {
-              if (connectedEdges.includes(edgeId)) {
-                edgeElement.classList.add('edge-highlight');
-                edgeElement.classList.remove('edge-inactive');
-              } else {
-                edgeElement.classList.add('edge-inactive');
-                edgeElement.classList.remove('edge-highlight');
+          allEdges.forEach(edge => {
+            edgesDS.update({
+              id: edge.id,
+              hidden: false,
+              color: {
+                ...edge.color,
+                opacity: connectedEdges.includes(edge.id) ? 0.8 : 0.2
               }
-            }
+            });
+          });
+        } else {
+          // Restaurar todas as arestas
+          allEdges.forEach(edge => {
+            edgesDS.update({
+              id: edge.id,
+              hidden: false,
+              color: {
+                ...edge.color,
+                opacity: 0.8
+              }
+            });
           });
         }
-      });
+      }
       
-      network.on('deselectNode', () => {
-        // Remove todas as classes de destaque
-        document.querySelectorAll('.node-highlight').forEach(el => el.classList.remove('node-highlight'));
-        document.querySelectorAll('.edge-highlight, .edge-inactive').forEach(el => {
-          el.classList.remove('edge-highlight', 'edge-inactive');
-        });
+      // Evento de clique no gráfico
+      network.on("click", function(params) {
+        // Se clicou em um nó
+        if (params.nodes.length > 0) {
+          const nodeId = params.nodes[0];
+          
+          // Se clicou no mesmo nó, deseleciona
+          if (selectedNode === nodeId) {
+            selectedNode = null;
+            network.selectNodes([]);
+          } else {
+            selectedNode = nodeId;
+            network.selectNodes([nodeId]);
+          }
+        } 
+        // Se clicou em um espaço vazio, deseleciona tudo
+        else {
+          selectedNode = null;
+          network.selectNodes([]);
+        }
+        
+        // Atualiza a visibilidade das arestas
+        updateEdgeVisibility(selectedNode);
       });
+
       
       // Gerar tabela de compatibilidade
       let html = `
