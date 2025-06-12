@@ -10,25 +10,34 @@
     h1 { text-align: center; color: #7c4dff; }
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; max-width: 600px; margin: auto; }
     input { padding: 8px; border-radius: 5px; border: 1px solid #ccc; }
-    .graph { height: 500px; border: 2px solid #ccc; border-radius: 10px; margin-top: 20px; }
+    .graph { height: 600px; border: 2px solid #ccc; border-radius: 10px; margin-top: 20px; }
     button { background: #7c4dff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; display: block; margin: 10px auto; }
     .highlight { background: #e0d7ff !important; }
+    #pagina1, #pagina2 { display: none; }
+    #pagina1.active, #pagina2.active { display: block; }
   </style>
 </head>
 <body>
-  <h1>Compatibilidade MBTI do Grupo</h1>
-  <div class="form-grid" id="form">
-    <input placeholder="Nome" /><input placeholder="MBTI (ex: ISFJ)" />
-    <input placeholder="Nome" /><input placeholder="MBTI (ex: ESFP)" />
-    <input placeholder="Nome" /><input placeholder="MBTI (ex: ISFP)" />
-    <input placeholder="Nome" /><input placeholder="MBTI (ex: ISTJ)" />
-    <input placeholder="Nome" /><input placeholder="MBTI (ex: ENFJ)" />
-    <input placeholder="Nome" /><input placeholder="MBTI (ex: ISTP)" />
-    <input placeholder="Nome" /><input placeholder="MBTI (ex: ENTP)" />
-    <input placeholder="Nome" /><input placeholder="MBTI (ex: ????)" />
+  <div id="pagina1" class="active">
+    <h1>Compatibilidade MBTI do Grupo</h1>
+    <div class="form-grid" id="form">
+      <input placeholder="Nome" /><input placeholder="MBTI (ex: ISFJ)" />
+      <input placeholder="Nome" /><input placeholder="MBTI (ex: ESFP)" />
+      <input placeholder="Nome" /><input placeholder="MBTI (ex: ISFP)" />
+      <input placeholder="Nome" /><input placeholder="MBTI (ex: ISTJ)" />
+      <input placeholder="Nome" /><input placeholder="MBTI (ex: ENFJ)" />
+      <input placeholder="Nome" /><input placeholder="MBTI (ex: ISTP)" />
+      <input placeholder="Nome" /><input placeholder="MBTI (ex: ENTP)" />
+      <input placeholder="Nome" /><input placeholder="MBTI (ex: ????)" />
+    </div>
+    <button onclick="irParaPagina2()">Ver Compatibilidade</button>
   </div>
-  <button onclick="gerarGrafo()">Ver Compatibilidade</button>
-  <div id="network" class="graph"></div>
+
+  <div id="pagina2">
+    <h1>Mapa de Compatibilidade</h1>
+    <div id="network" class="graph"></div>
+    <button onclick="voltarParaPagina1()">Voltar</button>
+  </div>
 
   <script>
     const compatibilidade = {
@@ -51,6 +60,17 @@
       return 'baixa';
     }
 
+    function irParaPagina2() {
+      document.getElementById('pagina1').classList.remove('active');
+      document.getElementById('pagina2').classList.add('active');
+      gerarGrafo();
+    }
+
+    function voltarParaPagina1() {
+      document.getElementById('pagina2').classList.remove('active');
+      document.getElementById('pagina1').classList.add('active');
+    }
+
     function gerarGrafo() {
       const form = document.querySelectorAll('#form input');
       const pessoas = [];
@@ -67,7 +87,7 @@
           const tipo = grauCompat(pessoas[i].mbti,pessoas[j].mbti);
           if (!tipo || tipo === 'mesmo') continue;
           const cor = tipo === 'alta' ? 'green' : 'red';
-          edgesArr.push({from:i, to:j, color:{color:cor}, label:tipo});
+          edgesArr.push({from:i, to:j, color:{color:cor}, label:tipo, width:3});
         }
       }
 
@@ -75,9 +95,18 @@
       const data = {nodes: new vis.DataSet(nodesArr), edges: new vis.DataSet(edgesArr)};
       const options = {
         interaction:{hover:true, selectConnectedEdges:true},
-        nodes:{shape:'dot',size:20,font:{size:16,color:'#000'}, color:{background:'#a188ff',border:'#7c4dff'}},
-        edges:{arrows:'to',font:{align:'top'}, smooth:true},
-        physics:false
+        nodes:{shape:'dot',size:25,font:{size:18,color:'#000'}, color:{background:'#a188ff',border:'#7c4dff'}},
+        edges:{arrows:'to',font:{align:'middle'}, smooth:true},
+        physics: {
+          barnesHut: {
+            gravitationalConstant: -8000,
+            centralGravity: 0.3,
+            springLength: 250,
+            springConstant: 0.05,
+            damping: 0.09
+          },
+          stabilization: { iterations: 250 }
+        }
       };
       const network = new vis.Network(container, data, options);
 
@@ -89,3 +118,4 @@
   </script>
 </body>
 </html>
+
