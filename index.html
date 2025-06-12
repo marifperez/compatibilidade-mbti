@@ -11,6 +11,9 @@
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; max-width: 600px; margin: auto; }
     select, input[type=text] { padding: 8px; border-radius: 5px; border: 1px solid #ccc; width: 100%; }
     .graph { height: 600px; border: 2px solid #ccc; border-radius: 10px; margin-top: 20px; }
+    table { width: 80%; margin: 20px auto; border-collapse: collapse; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background: #e0d7ff; }
     button { background: #7c4dff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; display: block; margin: 10px auto; }
     #pagina1, #pagina2 { display: none; }
     #pagina1.active, #pagina2.active { display: block; }
@@ -20,7 +23,6 @@
   <div id="pagina1" class="active">
     <h1>Compatibilidade MBTI do Grupo</h1>
     <div class="form-grid" id="form">
-      <!-- 8 pessoas: Nome e seleção de MBTI -->
       <input type="text" placeholder="Nome" id="nome0" />
       <select id="mbti0"><option value="">Tipo MBTI</option></select>
       <input type="text" placeholder="Nome" id="nome1" />
@@ -44,6 +46,7 @@
   <div id="pagina2">
     <h1>Mapa de Compatibilidade</h1>
     <div id="network" class="graph"></div>
+    <div id="compatTable"></div>
     <button onclick="voltarParaPagina1()">Voltar</button>
   </div>
 
@@ -61,7 +64,7 @@
       'ISFP':['ESFP','ISFJ','ISTP','INFP'],'ISTJ':['ESFJ','ISFJ','ESTP'],
       'ENFJ':['INFP','ISFP','INFJ'],'ISTP':['ISFJ','ISFP','ESTP'],'ENTP':['INTJ','INFJ','ENFP']
     };
-    function grau(m1,m2){ if(m1===m2)return null; if(compat[m1]?.includes(m2)||compat[m2]?.includes(m1))return 'alta'; return 'baixa'; }
+    function grau(m1,m2){ if(m1===m2)return null; if(compat[m1]?.includes(m2)||compat[m2]?.includes(m1))return 'Alta'; return 'Baixa'; }
 
     function irParaPagina2(){
       gerarGrafo();
@@ -82,11 +85,13 @@
       }
       const nodes = pessoas.map((p,i)=>({id:i,label:`${p.nome}\n(${p.mbti})`}));
       const edgesData = [];
+      const compatList = [];
       pessoas.forEach((p,i)=>pessoas.slice(i+1).forEach((q,j)=>{
         const t = grau(p.mbti,q.mbti);
         if(t){
-          const cor = t==='alta'?'green':'red';
+          const cor = t==='Alta'?'green':'red';
           edgesData.push({id:`${i}-${i+1+j}`, from:i, to:i+1+j, color:{color:cor}, label:t, width:5, origColor:cor, origWidth:5});
+          compatList.push({p1:p.nome, p2:q.nome, grau:t});
         }
       }));
 
@@ -94,7 +99,7 @@
       const nodesDS = new vis.DataSet(nodes);
       const edgesDS = new vis.DataSet(edgesData);
       const network = new vis.Network(container, {nodes:nodesDS, edges:edgesDS}, {
-        interaction:{hover:true},
+        interaction:{hover:true, zoomView:false},
         nodes:{shape:'dot',size:30,font:{size:16}},
         edges:{arrows:'to',smooth:true},
         physics:{barnesHut:{gravitationalConstant:-2000,springLength:300}}
@@ -109,7 +114,16 @@
       network.on('deselectNode', ()=>{
         edgesDS.forEach(e=>edgesDS.update({id:e.id, color:{color:e.origColor}, width:e.origWidth}));
       });
+
+      // gerar tabela
+      let html = '<table><tr><th>Pessoa 1</th><th>Pessoa 2</th><th>Grau</th></tr>';
+      compatList.forEach(c=>{
+        html += `<tr><td>${c.p1}</td><td>${c.p2}</td><td>${c.grau}</td></tr>`;
+      });
+      html += '</table>';
+      document.getElementById('compatTable').innerHTML = html;
     }
   </script>
 </body>
 </html>
+
