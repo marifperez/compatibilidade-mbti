@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Compatibilidade MBTI - Grupo</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" />
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #f8f4ff; color: #333; margin: 0; padding: 20px; }
+    h1 { text-align: center; color: #7c4dff; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; max-width: 600px; margin: auto; }
+    input { padding: 8px; border-radius: 5px; border: 1px solid #ccc; }
+    .graph { height: 500px; border: 2px solid #ccc; border-radius: 10px; margin-top: 20px; }
+    button { background: #7c4dff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; display: block; margin: 10px auto; }
+    .highlight { background: #e0d7ff !important; }
+  </style>
+</head>
+<body>
+  <h1>Compatibilidade MBTI do Grupo</h1>
+  <div class="form-grid" id="form">
+    <input placeholder="Nome" /><input placeholder="MBTI (ex: ISFJ)" />
+    <input placeholder="Nome" /><input placeholder="MBTI (ex: ESFP)" />
+    <input placeholder="Nome" /><input placeholder="MBTI (ex: ISFP)" />
+    <input placeholder="Nome" /><input placeholder="MBTI (ex: ISTJ)" />
+    <input placeholder="Nome" /><input placeholder="MBTI (ex: ENFJ)" />
+    <input placeholder="Nome" /><input placeholder="MBTI (ex: ISTP)" />
+    <input placeholder="Nome" /><input placeholder="MBTI (ex: ENTP)" />
+    <input placeholder="Nome" /><input placeholder="MBTI (ex: ????)" />
+  </div>
+  <button onclick="gerarGrafo()">Ver Compatibilidade</button>
+  <div id="network" class="graph"></div>
+
+  <script>
+    const compatibilidade = {
+      'ISFJ': ['ESFP', 'ESTP', 'ISFP', 'ISTP'],
+      'ESFP': ['ISFJ', 'ISTJ', 'ESTJ', 'ISFP'],
+      'ISFP': ['ESFP', 'ISFJ', 'ISTP', 'INFP'],
+      'ISTJ': ['ESFJ', 'ISFJ', 'ESTP'],
+      'ENFJ': ['INFP', 'ISFP', 'INFJ'],
+      'ISTP': ['ISFJ', 'ISFP', 'ESTP'],
+      'ENTP': ['INTJ', 'INFJ', 'ENFP']
+    };
+
+    function grauCompat(mbti1, mbti2) {
+      mbti1 = mbti1?.toUpperCase();
+      mbti2 = mbti2?.toUpperCase();
+      if (!mbti1 || !mbti2) return null;
+      if (mbti1 === mbti2) return 'mesmo';
+      if (compatibilidade[mbti1]?.includes(mbti2)) return 'alta';
+      if (compatibilidade[mbti2]?.includes(mbti1)) return 'alta';
+      return 'baixa';
+    }
+
+    function gerarGrafo() {
+      const form = document.querySelectorAll('#form input');
+      const pessoas = [];
+      for (let i = 0; i < form.length; i += 2) {
+        const nome = form[i].value.trim();
+        const mbti = form[i+1].value.trim().toUpperCase();
+        if (nome && mbti) pessoas.push({nome, mbti});
+      }
+
+      const nodesArr = pessoas.map((p,i) => ({id:i, label:`${p.nome}\n(${p.mbti})`}));
+      const edgesArr = [];
+      for (let i=0;i<pessoas.length;i++){
+        for(let j=i+1;j<pessoas.length;j++){
+          const tipo = grauCompat(pessoas[i].mbti,pessoas[j].mbti);
+          if (!tipo || tipo === 'mesmo') continue;
+          const cor = tipo === 'alta' ? 'green' : 'red';
+          edgesArr.push({from:i, to:j, color:{color:cor}, label:tipo});
+        }
+      }
+
+      const container = document.getElementById('network');
+      const data = {nodes: new vis.DataSet(nodesArr), edges: new vis.DataSet(edgesArr)};
+      const options = {
+        interaction:{hover:true, selectConnectedEdges:true},
+        nodes:{shape:'dot',size:20,font:{size:16,color:'#000'}, color:{background:'#a188ff',border:'#7c4dff'}},
+        edges:{arrows:'to',font:{align:'top'}, smooth:true},
+        physics:false
+      };
+      const network = new vis.Network(container, data, options);
+
+      network.on('selectNode', params=>{
+        data.nodes.forEach(n=>data.nodes.update({id:n.id, color:{background:'#a188ff'}}));
+        params.nodes.forEach(id=>data.nodes.update({id, color:{background:'#e0d7ff'}}));
+      });
+    }
+  </script>
+</body>
+</html>
