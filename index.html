@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mapa de Compatibilidade MBTI</title>
+  <title>Compatibilidade MBTI do Grupo</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" />
   <style>
@@ -13,7 +13,6 @@
       --primary-dark: #3f1dcb;
       --success: #00c853;    /* Verde - Alta compat */
       --danger: #ff1744;     /* Vermelho - Baixa compat */
-      --inactive: #e2e8f0;   /* Cinza - Inativo */
       --text: #2d3748;
       --bg: #f8f4ff;
       --card-bg: #ffffff;
@@ -28,43 +27,84 @@
       line-height: 1.6;
     }
     
-    h1 {
+    h1, h2 {
       text-align: center;
       color: var(--primary);
-      margin: 30px 0;
+    }
+    
+    h1 {
+      margin: 30px 0 20px;
+    }
+    
+    h2 {
+      margin: 20px 0;
+      font-size: 1.4rem;
     }
     
     .container {
       max-width: 1000px;
       margin: 0 auto;
+      padding: 0 20px;
     }
     
-    /* FORMULÁRIO COM MAIS ESPAÇO */
+    /* FORMULÁRIO COM MARGENS CORRETAS */
     .form-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 25px;  /* Aumentei o gap */
+      gap: 25px;
       margin: 40px 0;
     }
     
     .input-group {
-      margin-bottom: 15px;  /* Espaço extra entre grupos */
+      margin-bottom: 25px;  /* Margem aumentada */
     }
     
-    label {
+    .input-group label {
       display: block;
-      margin-bottom: 8px;
+      margin-bottom: 10px;  /* Margem aumentada */
       font-weight: 600;
       color: var(--primary-dark);
     }
     
-    input[type="text"], select {
+    .input-group input,
+    .input-group select {
       width: 100%;
       padding: 12px;
-      margin-bottom: 15px;  /* Espaço abaixo dos inputs */
+      margin-bottom: 5px;  /* Espaço entre inputs */
       border: 2px solid #e2e8f0;
       border-radius: 8px;
       font-size: 1rem;
+    }
+    
+    /* BOTÕES FUNCIONAIS */
+    .btn {
+      background: var(--primary);
+      color: white;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      display: block;
+      margin: 40px auto;
+      transition: all 0.3s;
+      width: 250px;
+      text-align: center;
+    }
+    
+    .btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    /* PÁGINAS */
+    #pagina1, #pagina2 {
+      display: none;
+    }
+    
+    #pagina1.active, #pagina2.active {
+      display: block;
     }
     
     /* GRÁFICO */
@@ -81,66 +121,6 @@
       width: 100%;
       border-radius: 8px;
     }
-    
-    /* LEGENDA */
-    .legend {
-      display: flex;
-      justify-content: center;
-      gap: 30px;
-      margin: 20px 0;
-    }
-    
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .legend-color {
-      width: 20px;
-      height: 20px;
-      border-radius: 4px;
-    }
-    
-    /* BOTÕES */
-    .btn {
-      background: var(--primary);
-      color: white;
-      padding: 12px 25px;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      cursor: pointer;
-      display: block;
-      margin: 30px auto;
-      transition: all 0.3s;
-    }
-    
-    .btn:hover {
-      background: var(--primary-dark);
-      transform: translateY(-2px);
-    }
-    
-    /* EFEITOS DE SELEÇÃO */
-    .node-highlight {
-      border: 3px solid var(--primary-light) !important;
-      box-shadow: 0 0 15px rgba(124, 77, 255, 0.4);
-    }
-    
-    .edge-active-high {
-      stroke: var(--success) !important;
-      stroke-width: 4px !important;
-    }
-    
-    .edge-active-low {
-      stroke: var(--danger) !important;
-      stroke-width: 4px !important;
-    }
-    
-    .edge-inactive {
-      stroke: var(--inactive) !important;
-      opacity: 0.5 !important;
-    }
   </style>
 </head>
 <body>
@@ -153,7 +133,7 @@
       </p>
       
       <div class="form-grid" id="form">
-        <!-- 8 inputs com mais espaçamento -->
+        <!-- 8 membros com margens adequadas -->
         <div class="input-group">
           <label for="nome0">Membro 1</label>
           <input type="text" placeholder="Nome" id="nome0">
@@ -166,37 +146,60 @@
           <select id="mbti1"><option value="">Tipo MBTI</option></select>
         </div>
         
-        <!-- ... (repetir para os outros 6 membros) ... -->
+        <div class="input-group">
+          <label for="nome2">Membro 3</label>
+          <input type="text" placeholder="Nome" id="nome2">
+          <select id="mbti2"><option value="">Tipo MBTI</option></select>
+        </div>
+        
+        <div class="input-group">
+          <label for="nome3">Membro 4</label>
+          <input type="text" placeholder="Nome" id="nome3">
+          <select id="mbti3"><option value="">Tipo MBTI</option></select>
+        </div>
+        
+        <div class="input-group">
+          <label for="nome4">Membro 5</label>
+          <input type="text" placeholder="Nome" id="nome4">
+          <select id="mbti4"><option value="">Tipo MBTI</option></select>
+        </div>
+        
+        <div class="input-group">
+          <label for="nome5">Membro 6</label>
+          <input type="text" placeholder="Nome" id="nome5">
+          <select id="mbti5"><option value="">Tipo MBTI</option></select>
+        </div>
+        
+        <div class="input-group">
+          <label for="nome6">Membro 7</label>
+          <input type="text" placeholder="Nome" id="nome6">
+          <select id="mbti6"><option value="">Tipo MBTI</option></select>
+        </div>
+        
+        <div class="input-group">
+          <label for="nome7">Membro 8</label>
+          <input type="text" placeholder="Nome" id="nome7">
+          <select id="mbti7"><option value="">Tipo MBTI</option></select>
+        </div>
       </div>
       
-      <button class="btn" onclick="irParaPagina2()">Gerar Mapa</button>
+      <button class="btn" onclick="irParaPagina2()">Gerar Mapa de Compatibilidade</button>
     </div>
 
     <!-- PÁGINA 2 - VISUALIZAÇÃO -->
     <div id="pagina2">
       <h1>Mapa de Compatibilidade</h1>
       
-      <div class="legend">
-        <div class="legend-item">
-          <div class="legend-color" style="background: var(--success);"></div>
-          <span>Alta Compatibilidade</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color" style="background: var(--danger);"></div>
-          <span>Baixa Compatibilidade</span>
-        </div>
-      </div>
-      
       <div class="graph-container">
         <div id="network"></div>
       </div>
       
-      <button class="btn" onclick="voltarParaPagina1()">Voltar</button>
+      <button class="btn" onclick="voltarParaPagina1()">Voltar e Editar</button>
     </div>
   </div>
 
   <script>
-    // Inicialização
+    // Inicialização dos selects MBTI
     document.addEventListener('DOMContentLoaded', () => {
       const mbtiOptions = ['ISFJ','ESFJ','ISTJ','ESTJ','ISFP','ESFP','ISTP','ESTP','INFJ','ENFJ','INTJ','ENTJ','INFP','ENFP','INTP','ENTP'];
       for(let i=0; i<8; i++) {
@@ -210,7 +213,11 @@
       'ISFJ': ['ESFP','ESTP','ISFP','ISTP'],
       'ESFP': ['ISFJ','ISTJ','ESTJ','ISFP'],
       'ISFP': ['ESFP','ISFJ','ISTP','INFP'],
-      'ISTJ': ['ESFJ','ISFJ','ESTP']
+      'ISTJ': ['ESFJ','ISFJ','ESTP'],
+      'INFJ': ['ENTP','ESTP','ENFP'],
+      'ENFJ': ['INFP','ISFP','ISTP'],
+      'INTJ': ['ENTP','ENFP'],
+      'ENTJ': ['INFP','ISFP']
     };
     
     function getCompatibility(type1, type2) {
@@ -219,19 +226,21 @@
       return 'Baixa';
     }
 
-    // Controle de páginas
+    // Controle de páginas (AGORA FUNCIONANDO)
     function irParaPagina2() {
       gerarGrafo();
       document.getElementById('pagina1').classList.remove('active');
       document.getElementById('pagina2').classList.add('active');
+      window.scrollTo(0, 0);
     }
     
     function voltarParaPagina1() {
       document.getElementById('pagina2').classList.remove('active');
       document.getElementById('pagina1').classList.add('active');
+      window.scrollTo(0, 0);
     }
 
-    // GERAR O GRÁFICO
+    // Gerar o gráfico
     function gerarGrafo() {
       const pessoas = [];
       for(let i=0; i<8; i++) {
@@ -252,7 +261,8 @@
             background: '#fff',
             border: '#7c4dff',
             highlight: { background: '#f3efff' }
-          }
+          },
+          borderWidth: 2
         }))
       );
       
@@ -260,7 +270,7 @@
       const edges = new vis.DataSet();
       pessoas.forEach(p1 => {
         pessoas.forEach(p2 => {
-          if(p1.id >= p2.id) return; // Evitar duplicatas
+          if(p1.id >= p2.id) return;
           
           const compatibilidade = getCompatibility(p1.mbti, p2.mbti);
           if(!compatibilidade) return;
@@ -281,79 +291,26 @@
         });
       });
       
-      // Configuração do gráfico
+      // Configurar rede
       const container = document.getElementById('network');
       const data = { nodes, edges };
       const options = {
         nodes: {
-          borderWidth: 2,
-          shadow: true,
-          font: { strokeWidth: 2, strokeColor: '#fff' }
+          font: { strokeWidth: 2, strokeColor: '#fff' },
+          shadow: true
         },
         edges: {
-          selectionWidth: 0, // Desativa seleção direta de arestas
           font: { strokeWidth: 2, strokeColor: '#fff', size: 14 }
         },
         physics: {
           barnesHut: { gravitationalConstant: -2000, springLength: 200 }
         },
         interaction: {
-          selectConnectedEdges: true,
-          hover: true
+          selectConnectedEdges: true
         }
       };
       
-      const network = new vis.Network(container, data, options);
-      
-      // GERENCIAR SELEÇÃO (PARTE CRÍTICA)
-      network.on('selectNode', params => {
-        const nodeId = params.nodes[0];
-        if(!nodeId) return;
-        
-        // 1. Destacar o nó selecionado
-        nodes.update({ id: nodeId, color: { border: '#b47cff' } });
-        
-        // 2. Processar todas as arestas
-        edges.forEach(edge => {
-          const isConnected = edge.from === nodeId || edge.to === nodeId;
-          const isHigh = edge.label === 'Alta';
-          
-          if(isConnected) {
-            // 3. Manter a cor original (verde/vermelho) mas destacar
-            edges.update({
-              id: edge.id,
-              color: {
-                color: isHigh ? '#00c853' : '#ff1744',
-                opacity: 1
-              },
-              width: 5
-            });
-          } else {
-            // 4. Desbotar arestas não relacionadas
-            edges.update({
-              id: edge.id,
-              color: { color: '#e2e8f0', opacity: 0.5 },
-              width: 2
-            });
-          }
-        });
-      });
-      
-      network.on('deselectNode', () => {
-        // Restaurar estado original
-        nodes.forEach(node => {
-          nodes.update({ id: node.id, color: { border: '#7c4dff' } });
-        });
-        
-        edges.forEach(edge => {
-          const isHigh = edge.label === 'Alta';
-          edges.update({
-            id: edge.id,
-            color: { color: isHigh ? '#00c853' : '#ff1744', opacity: 1 },
-            width: 3
-          });
-        });
-      });
+      new vis.Network(container, data, options);
     }
   </script>
 </body>
