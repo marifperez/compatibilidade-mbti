@@ -23,6 +23,7 @@
   <div id="pagina1" class="active">
     <h1>Compatibilidade MBTI do Grupo</h1>
     <div class="form-grid" id="form">
+      <!-- 8 pessoas: Nome e seleção de MBTI -->
       <input type="text" placeholder="Nome" id="nome0" />
       <select id="mbti0"><option value="">Tipo MBTI</option></select>
       <input type="text" placeholder="Nome" id="nome1" />
@@ -90,7 +91,10 @@
         const t = grau(p.mbti,q.mbti);
         if(t){
           const cor = t==='Alta'?'green':'red';
-          edgesData.push({id:`${i}-${i+1+j}`, from:i, to:i+1+j, color:{color:cor}, label:t, width:5, origColor:cor, origWidth:5});
+          edgesData.push({id:`${i}-${i+1+j}`, from:i, to:i+1+j,
+            arrows:{ to:{enabled:true, scaleFactor:1}, from:{enabled:true, scaleFactor:1} },
+            color:{color:cor, highlight:'blue'}, label:t, width:5
+          });
           compatList.push({p1:p.nome, p2:q.nome, grau:t});
         }
       }));
@@ -98,32 +102,25 @@
       const container = document.getElementById('network');
       const nodesDS = new vis.DataSet(nodes);
       const edgesDS = new vis.DataSet(edgesData);
-      const network = new vis.Network(container, {nodes:nodesDS, edges:edgesDS}, {
-        interaction:{hover:true, zoomView:false},
+      const options = {
+        interaction:{hover:true, zoomView:false, selectConnectedEdges:true},
         nodes:{shape:'dot',size:30,font:{size:16}},
-        edges:{arrows:'to',smooth:true},
+        edges:{smooth:true, selectionWidth:7},
         physics:{barnesHut:{gravitationalConstant:-2000,springLength:300}}
-      });
+      };
+      const network = new vis.Network(container, {nodes:nodesDS, edges:edgesDS}, options);
 
-      network.on('selectNode', params=>{
-        edgesDS.forEach(e=>edgesDS.update({id:e.id, color:{color:'#ddd'}, width:3}));
-        params.nodes.forEach(nodeId=>{
-          edgesDS.get().filter(e=>e.from===nodeId||e.to===nodeId).forEach(e=>edgesDS.update({id:e.id, color:{color:'blue'}, width:7}));
-        });
-      });
-      network.on('deselectNode', ()=>{
-        edgesDS.forEach(e=>edgesDS.update({id:e.id, color:{color:e.origColor}, width:e.origWidth}));
-      });
+      network.on('selectNode', params=>{});
+      network.on('deselectNode', ()=>{});
 
       // gerar tabela
       let html = '<table><tr><th>Pessoa 1</th><th>Pessoa 2</th><th>Grau</th></tr>';
-      compatList.forEach(c=>{
-        html += `<tr><td>${c.p1}</td><td>${c.p2}</td><td>${c.grau}</td></tr>`;
-      });
+      compatList.forEach(c=>{ html += `<tr><td>${c.p1}</td><td>${c.p2}</td><td>${c.grau}</td></tr>`; });
       html += '</table>';
       document.getElementById('compatTable').innerHTML = html;
     }
   </script>
 </body>
 </html>
+
 
